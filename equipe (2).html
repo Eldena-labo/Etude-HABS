@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Étude VISIA · Équipe</title>
+<title>Équipe</title>
 <style>
 :root{
   --bg:#faf9f1; --surface:#ffffff; --sunk:#f0ece4; --line:#e7e2d8; --fg:#141414; --muted:#8a8478; --cap:#3d3826;
@@ -137,8 +137,8 @@ tr.withdrawn td:last-child{opacity:1}
 
 <script>
 const BOOT = null;
-// ⬇︎ Adresse de votre application Web Apps Script (elle se termine par /exec)
-const API_URL = "https://script.google.com/macros/s/AKfycbzlqH0r-li7NKok84EGZaIA14g9P-Kjp1Cnvz2PhEMS2X90yOmxSh5DPsyCUnpjc1QoOQ/exec";
+// ⬇︎ Collez ici l'adresse /exec de l'Apps Script de CETTE étude (Déployer → Gérer les déploiements)
+const API_URL = "https://script.google.com/macros/s/VOTRE_ID/exec";
 const PAGE_MODE = "equipe";
 </script>
 <script>
@@ -314,11 +314,9 @@ function viewBook(){
     h("div",{class:"chosen"},h("b",{text:`${fmtLong(pick.date)} à ${hm(pick.time)}`}),h("span",{class:"sub",text:` (jusqu'à ${hm(slotEnd(pick.time))}) · ${CFG.location}`})),
     noteBox(),
     h("div",{class:"form"},
+      CFG.idRequired?field("Votre ID * (communiqué par l'équipe)","f-id",h("input",{type:"text",id:"f-id",class:"mono",value:form.pid||"",autocomplete:"off",autocapitalize:"characters",spellcheck:"false",oninput:e=>{form.pid=e.target.value;}})):null,
       field("Nom et prénom *","f-name",inp("f-name","text","name","name")),
-      field("Téléphone *","f-tel",inp("f-tel","tel","tel","tel")),
-      field("E-mail * (confirmation et rappel)","f-mail",inp("f-mail","email","mail","email"))),
-    h("label",{class:"consent"},h("input",{type:"checkbox",id:"f-consent",checked:form.consent||null,onchange:e=>{form.consent=e.target.checked;}}),
-      h("span",{text:"* J'accepte que mes coordonnées soient utilisées par l'équipe de l'étude uniquement pour organiser mon rendez-vous et me contacter à ce sujet."}))));
+      field("E-mail * (confirmation et rappel)","f-mail",inp("f-mail","email","mail","email")))));
   const msg=h("span",{class:"msg"});
   sheet.append(h("div",{class:"actions"},
     h("button",{class:"btn primary",id:"btn-confirm",disabled:busy,onclick:()=>confirmBooking(msg)},"Confirmer le rendez-vous"),
@@ -326,8 +324,8 @@ function viewBook(){
   return sheet;
 }
 async function confirmBooking(msg){
-  const req={date:pick.date,time:pick.time,name:(form.name||"").trim(),tel:(form.tel||"").trim(),mail:(form.mail||"").trim(),consent:!!form.consent};
-  const err=!req.name?"Indiquez votre nom.":!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.mail)?"Indiquez une adresse e-mail valide.":req.tel.replace(/\D/g,"").length<9?"Indiquez un numéro de téléphone valide.":!req.consent?"Merci de cocher la case d'accord (obligatoire).":"";
+  const req={date:pick.date,time:pick.time,pid:(form.pid||"").trim(),name:(form.name||"").trim(),mail:(form.mail||"").trim()};
+  const err=CFG.idRequired&&!req.pid?"Indiquez votre ID.":!req.name?"Indiquez votre nom.":!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(req.mail)?"Indiquez une adresse e-mail valide.":"";
   if(err){msg.className="msg err";msg.textContent=err;return;}
   busy=true;$("#btn-confirm").disabled=true;msg.className="msg";msg.textContent="Enregistrement…";
   try{
@@ -345,7 +343,7 @@ function viewResult(sheet){
   const r=result;
   if(r.already){
     sheet.append(h("h2",{text:"Vous êtes déjà inscrit·e"}),
-      h("p",{class:"sub",text:(r.mailed?"Nous vous avons renvoyé votre rendez-vous par e-mail, avec le lien pour le déplacer ou l'annuler. ":"")+"Pour toute question, contactez l'équipe de l'étude."+contactTxt()}));
+      h("p",{class:"sub",text:"Cet ID a déjà un rendez-vous. "+(r.mailed?"Nous avons renvoyé le rendez-vous par e-mail à l'adresse enregistrée, avec le lien pour le déplacer ou l'annuler. ":"")+"Pour toute question, contactez l'équipe de l'étude."+contactTxt()}));
     return sheet;
   }
   sheet.append(h("h2",{text:"Votre rendez-vous est confirmé"}),
